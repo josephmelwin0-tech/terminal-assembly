@@ -1,0 +1,52 @@
+# Terminal Block Assembly Verification System Configuration
+
+camera:
+  device_index: 1          # 1 for USB Phone Camera, 0 for laptop webcam fallback
+  width: 1280
+  height: 720
+  fps: 30
+  backend: "DSHOW"         # Windows DirectShow backend for USB webcams
+
+assembly:
+  total_terminals: 6
+  # Configurable expected wire layout for TB1 through TB6
+  # Options: RED, BLUE, YELLOW, BLACK, EMPTY
+  expected_configuration:
+    TB1: "BLUE"
+    TB2: "RED"
+    TB3: "YELLOW"
+    TB4: "EMPTY"
+    TB5: "EMPTY"
+    TB6: "EMPTY"
+  
+  # Mechanical end clamp & cover inspection
+  check_end_clamps: true
+  check_closer: true
+  min_confidence: 0.55
+
+stabilization:
+  # Consecutive identical inspection frames required to latch a PASS/FAIL state
+  history_window_size: 12
+  pass_threshold_ratio: 0.80  # 80% agreement in window to trigger PASS
+  motion_gating: true         # Pause evaluation when hand motion is high
+
+color_thresholds:
+  # HSV Color ranges for wire classification
+  red:
+    lower1: [0, 90, 60]
+    upper1: [10, 255, 255]
+    lower2: [168, 90, 60]
+    upper2: [180, 255, 255]
+  blue:
+    lower: [95, 100, 50]
+    upper: [135, 255, 255]
+  yellow:
+    lower: [18, 90, 90]
+    upper: [38, 255, 255]
+  black:
+    lower: [0, 0, 0]
+    upper: [180, 80, 60]
+
+server:
+  host: "127.0.0.1"
+  port: 8000

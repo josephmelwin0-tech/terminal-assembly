@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.venv/
+venv/
+ENV/
+
+# Large generated datasets & checkpoints
+*.pt
+!runs_classify/terminal_states_cls/weights/best.pt
+.cache/
+*.cache
+extracted_frames/
+yolo_dataset_cls/
+scratch/
+inspection_snapshot_*.jpg
+
+# Keep best trained weights
+runs_classify/*
+!runs_classify/terminal_states_cls
+runs_classify/terminal_states_cls/*
+!runs_classify/terminal_states_cls/weights
+runs_classify/terminal_states_cls/weights/*
+!runs_classify/terminal_states_cls/weights/best.pt
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIN Rail Terminal Assembly Verification</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-group">
+        <div class="status-indicator live"></div>
+        <div>
+          <h1>TERMINAL ASSEMBLY VERIFIER</h1>
+          <p class="subtitle">Industrial Computer Vision Inspection System (DIN Rail 35mm)</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge" id="camera-badge">Camera: Initializing...</span>
+        <span class="badge badge-accent" id="fps-badge">0.0 FPS</span>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+      <!-- Left: Camera Viewport -->
+      <section class="camera-card">
+        <div class="card-header">
+          <h2>LIVE CAMERA FEED</h2>
+          <div class="controls-group">
+            <label for="cam-select">Source:</label>
+            <select id="cam-select" onchange="switchCamera(this.value)">
+              <option value="0">Camera 0 (Default)</option>
+              <option value="1">Camera 1 (Secondary USB)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="viewport-wrapper">
+          <img id="live-stream" src="/video_feed" alt="Live Camera Feed" />
+          <div class="stream-overlay" id="stream-overlay">
+            <div class="crosshair-h"></div>
+            <div class="crosshair-v"></div>
+          </div>
+        </div>
+
+        <div class="camera-footer">
+          <span>Resolution: 1280x720 (Configured)</span>
+          <span id="frame-counter">Frames: 0</span>
+        </div>
+      </section>
+
+      <!-- Right: Inspection & Telemetry Panel -->
+      <section class="sidebar-card">
+        <!-- PASS/FAIL Banner -->
+        <div class="status-banner banner-idle" id="status-banner">
+          <div class="status-title" id="status-title">SYSTEM READY</div>
+          <div class="status-subtitle" id="status-reason">Stage 1: Camera Live Feed Running</div>
+        </div>
+
+        <!-- Terminal Block Matrix (TB1 - TB6) -->
+        <div class="card-section">
+          <h3>TERMINAL BLOCKS (TB1 - TB6)</h3>
+          <div class="terminal-grid" id="terminal-grid">
+            <div class="terminal-item" id="tb-1">
+              <span class="tb-name">TB1</span>
+              <span class="tb-exp" style="color: #ef4444;">EXP: RED</span>
+              <span class="tb-act">DET: PENDING</span>
+            </div>
+            <div class="terminal-item" id="tb-2">
+              <span class="tb-name">TB2</span>
+              <span class="tb-exp" style="color: #3b82f6;">EXP: BLUE</span>
+              <span class="tb-act">DET: PENDING</span>
+            </div>
+            <div class="terminal-item" id="tb-3">
+              <span class="tb-name">TB3</span>
+              <span class="tb-exp" style="color: #9ca3af;">EXP: BLACK</span>
+              <span class="tb-act">DET: PENDING</span>
+            </div>
+            <div class="terminal-item" id="tb-4">
+              <span class="tb-name">TB4</span>
+              <span class="tb-exp" style="color: #ef4444;">EXP: RED</span>
+              <span class="tb-act">DET: PENDING</span>
+            </div>
+            <div class="terminal-item" id="tb-5">
+              <span class="tb-name">TB5</span>
+              <span class="tb-exp" style="color: #64748b;">EXP: EMPTY</span>
+              <span class="tb-act">DET: PENDING</span>
+            </div>
+            <div class="terminal-item" id="tb-6">
+              <span class="tb-name">TB6</span>
+              <span class="tb-exp" style="color: #64748b;">EXP: EMPTY</span>
+              <span class="tb-act">DET: PENDING</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inspection Metrics -->
+        <div class="card-section">
+          <h3>PRODUCTION METRICS</h3>
+          <div class="metrics-grid">
+            <div class="metric-box">
+              <span class="metric-label">TOTAL RUNS</span>
+              <span class="metric-val" id="metric-total">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">PASSED</span>
+              <span class="metric-val text-green" id="metric-pass">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">FAILED</span>
+              <span class="metric-val text-red" id="metric-fail">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">CYCLE TIME</span>
+              <span class="metric-val" id="metric-cycle">-- ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dev Roadmap Step -->
+        <div class="card-section roadmap-box">
+          <div class="roadmap-header">
+            <span>PIPELINE PROGRESS</span>
+            <span class="badge badge-step">Stage 1 of 7</span>
+          </div>
+          <ol class="roadmap-list">
+            <li class="done">Stage 1: Camera capture & MJPEG streaming</li>
+            <li class="pending">Stage 2: DIN Rail & Terminal Block locator</li>
+            <li class="pending">Stage 3: Wire presence & Color classifier</li>
+            <li class="pending">Stage 4: Expected vs Actual comparison</li>
+            <li class="pending">Stage 5: Temporal PASS/FAIL state machine</li>
+            <li class="pending">Stage 6: Real-time reactive Dashboard</li>
+            <li class="pending">Stage 7: Edge cases & YOLO model (if needed)</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
