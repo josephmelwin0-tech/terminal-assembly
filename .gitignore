@@ -9,10 +9,12 @@ ENV/
 # Large generated datasets & checkpoints
 *.pt
 !runs_classify/terminal_states_cls/weights/best.pt
+!runs_detect/terminal_detector/weights/best.pt
 .cache/
 *.cache
 extracted_frames/
 yolo_dataset_cls/
+yolo_dataset_det/
 scratch/
 inspection_snapshot_*.jpg
 
@@ -23,6 +25,14 @@ runs_classify/terminal_states_cls/*
 !runs_classify/terminal_states_cls/weights
 runs_classify/terminal_states_cls/weights/*
 !runs_classify/terminal_states_cls/weights/best.pt
+
+runs_detect/*
+!runs_detect/terminal_detector
+runs_detect/terminal_detector/*
+!runs_detect/terminal_detector/weights
+runs_detect/terminal_detector/weights/*
+!runs_detect/terminal_detector/weights/best.pt
+!runs_detect/terminal_detector/weights/last.pt
 
 # OS
 Thumbs.db
