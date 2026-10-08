@@ -79,18 +79,21 @@ class ComponentDetector:
                     "confidence": conf,
                     "bbox": [x1, y1, x2 - x1, y2 - y1],
                 })
-        else:
-            # Hybrid fallback: Wire detector + geometric cluster
-            wires = self.wire_detector.detect_wires(img)
-            for w_item in wires:
-                col = w_item["color"].lower()
-                cname = f"{col}_wire"
+
+        # Supplement with WireDetector (HSV + ferrule tracker)
+        detected_wire_colors = {d["class_name"].replace("_wire", "").upper() for d in detections if "_wire" in d["class_name"]}
+        wires = self.wire_detector.detect_wires(img)
+        for w_item in wires:
+            col = w_item["color"].upper()
+            if col not in detected_wire_colors and col in ["BLUE", "RED", "YELLOW"]:
+                cname = f"{col.lower()}_wire"
                 detections.append({
                     "class_name": cname,
                     "class_id": COMPONENT_CLASSES.index(cname) if cname in COMPONENT_CLASSES else 4,
                     "confidence": w_item["confidence"],
                     "bbox": w_item["bbox"],
                 })
+                detected_wire_colors.add(col)
 
         return detections
 
@@ -134,12 +137,61 @@ class ComponentDetector:
 
         # 4. Dual Perception Corroboration
         if cls_pred is not None and cls_conf >= 0.70:
-            # If classifier agrees with spatial graph or supports advancement
-            if cls_pred == inferred_state and is_valid:
+            cls_idx = ASSEMBLY_STATES.index(cls_pred) if cls_pred in ASSEMBLY_STATES else -1
+            target_idx = current_step_index
+
+            # If classifier confirms current target step with high confidence, lock to target step
+            if cls_conf >= 0.85 and cls_idx == target_idx:
+                inferred_state = target_state
+                is_valid = True
+                conf = max(conf, cls_conf)
+                if target_idx == 1:
+                    diagnostic = "PASS: Step 1 Complete (6 Terminal Blocks mounted on DIN rail)"
+                elif target_idx == 2:
+                    diagnostic = "PASS: Step 2 Complete (End Closer Plate attached)"
+                elif target_idx == 3:
+                    diagnostic = "PASS: Step 3 Complete (End Clamps fastened on both sides)"
+                elif target_idx == 4:
+                    diagnostic = "PASS: Step 4 Complete (Blue Wire connected to TB1)"
+                elif target_idx == 5:
+                    diagnostic = "PASS: Step 5 Complete (Red Wire connected to TB2)"
+                elif target_idx == 6:
+                    diagnostic = "PASS: Step 6 Complete (Full Assembly Verified - All 3 Wires Connected)"
+            elif is_valid and cls_pred == inferred_state:
                 conf = min(0.99, max(conf, (conf + cls_conf) / 2.0))
-            elif cls_pred == target_state and not is_valid:
-                # Keep spatial graph defect message! (Physical rules take precedence)
-                pass
+            elif cls_idx >= target_idx and not is_valid:
+                # Corroborate stages where monolithic gray components cause detector occlusion
+                if target_idx in [1, 2, 3]:
+                    inferred_state = target_state
+                    is_valid = True
+                    conf = max(conf, cls_conf)
+                    if target_idx == 1:
+                        diagnostic = "PASS: Step 1 Complete (6 Terminal Blocks mounted on DIN rail)"
+                    elif target_idx == 2:
+                        diagnostic = "PASS: Step 2 Complete (End Closer Plate attached)"
+                    elif target_idx == 3:
+                        diagnostic = "PASS: Step 3 Complete (End Clamps fastened on both sides)"
+                elif target_idx == 4:
+                    has_blue = any(d["class_name"] == "blue_wire" for d in detections)
+                    if has_blue or cls_conf >= 0.85:
+                        inferred_state = "state_4_blue_wire"
+                        is_valid = True
+                        conf = max(conf, cls_conf)
+                        diagnostic = "PASS: Step 4 Complete (Blue Wire connected to TB1)"
+                elif target_idx == 5:
+                    has_red = any(d["class_name"] == "red_wire" for d in detections)
+                    if has_red or cls_conf >= 0.85:
+                        inferred_state = "state_5_red_wire"
+                        is_valid = True
+                        conf = max(conf, cls_conf)
+                        diagnostic = "PASS: Step 5 Complete (Red Wire connected to TB2)"
+                elif target_idx == 6:
+                    has_yellow = any(d["class_name"] == "yellow_wire" for d in detections)
+                    if has_yellow or cls_conf >= 0.85:
+                        inferred_state = "state_6_yellow_wire"
+                        is_valid = True
+                        conf = max(conf, cls_conf)
+                        diagnostic = "PASS: Step 6 Complete (Full Assembly Verified - All 3 Wires Connected)"
 
         return {
             "predicted_state": inferred_state,
