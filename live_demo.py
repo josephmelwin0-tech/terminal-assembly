@@ -150,11 +150,27 @@ def draw_industrial_hud(frame, res, sm_state, state_machine, fps, dev_idx):
 
 
 def main():
-    dev_idx = 1
+    import yaml
+    dev_idx = 0
+    cfg_path = os.path.join(PROJECT_ROOT, "config", "config.yaml")
+    if os.path.exists(cfg_path):
+        try:
+            with open(cfg_path, "r") as f:
+                cfg = yaml.safe_load(f)
+                dev_idx = cfg.get("camera", {}).get("device_index", 0)
+        except Exception:
+            pass
+
+    if len(sys.argv) > 1:
+        try:
+            dev_idx = int(sys.argv[1])
+        except ValueError:
+            pass
+
     width, height = 1280, 720
 
     print("=" * 72)
-    print(" INDUSTRIAL DIN RAIL ASSEMBLY VERIFIER - LIVE DEMO")
+    print(" INDUSTRIAL DIN RAIL ASSEMBLY VERIFIER - LIVE WEBCAM HUD")
     print(f" Connecting to Camera Device {dev_idx}...")
     print(" Controls: [q] Quit  |  [r] Reset  |  [c] Cycle Camera  |  [s] Snapshot")
     print("=" * 72)
@@ -164,9 +180,12 @@ def main():
         print(f"[WARN] Failed to open Device {dev_idx} with DSHOW, trying default backend...")
         cap = cv2.VideoCapture(dev_idx)
     if not cap.isOpened():
-        print(f"[WARN] Device {dev_idx} unavailable, falling back to Device 0...")
-        dev_idx = 0
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        alt_idx = 1 if dev_idx == 0 else 0
+        print(f"[WARN] Device {dev_idx} unavailable, falling back to Device {alt_idx}...")
+        dev_idx = alt_idx
+        cap = cv2.VideoCapture(dev_idx, cv2.CAP_DSHOW)
+        if not cap.isOpened():
+            cap = cv2.VideoCapture(dev_idx)
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
